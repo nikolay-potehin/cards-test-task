@@ -55,3 +55,5 @@ Example:
 - Streak grows only on correct swipe decision.
 - Drawer shows recent swipe history entries.
 - Correct choice uses light haptic, wrong uses heavy.
+- Streak stays visible until restart tap.
+- Streak pulses orange on increment.

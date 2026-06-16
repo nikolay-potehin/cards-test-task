@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
@@ -28,31 +30,64 @@ class _CardsViewState extends State<CardsView> {
   bool _isSwipeCompleting = false;
   bool _isInstantResetFrame = false;
   double _nextCardScale = _backCardScale;
+  int _lastStreak = 0;
+  double _streakScale = 1;
+  bool _isStreakHighlighted = false;
+  Timer? _streakPulseTimer;
+
+  @override
+  void dispose() {
+    _streakPulseTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CardsCubit, CardsState>(
+    return BlocConsumer<CardsCubit, CardsState>(
+      listener: (_, state) {
+        if (state.streak > _lastStreak) {
+          final targetScale = state.streak % 10 == 0
+              ? 1.18
+              : state.streak % 5 == 0
+              ? 1.13
+              : 1.07;
+          _streakPulseTimer?.cancel();
+          setState(() {
+            _streakScale = targetScale;
+            _isStreakHighlighted = true;
+          });
+          _streakPulseTimer = Timer(const Duration(milliseconds: 280), () {
+            if (!mounted) {
+              return;
+            }
+            setState(() {
+              _streakScale = 1;
+              _isStreakHighlighted = false;
+            });
+          });
+        }
+
+        if (state.streak == 0) {
+          _streakPulseTimer?.cancel();
+          setState(() {
+            _streakScale = 1;
+            _isStreakHighlighted = false;
+          });
+        }
+
+        _lastStreak = state.streak;
+      },
       builder: (context, state) {
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!state.hasCards || state.currentCard == null) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('No cards in deck'),
-                const SizedBox(height: 12),
-                ElevatedButton(onPressed: () => context.read<CardsCubit>().restartDeck(), child: const Text('Restart')),
-              ],
-            ),
-          );
-        }
-
-        final currentCard = state.currentCard!;
+        final currentCard = state.currentCard;
         final nextCard = state.nextCard;
         final leftDepthCount = _leftDepthCount(state);
+        final streakStyle = (Theme.of(context).textTheme.headlineMedium ?? const TextStyle()).copyWith(
+          color: _isStreakHighlighted ? Colors.orange : Theme.of(context).colorScheme.onSurface,
+        );
 
         return Padding(
           padding: const EdgeInsets.all(16),
@@ -61,11 +96,20 @@ class _CardsViewState extends State<CardsView> {
               const SizedBox(height: 8),
               Text('Streak', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 2),
-              AnimatedFlipCounter(
-                value: state.streak,
-                duration: const Duration(milliseconds: 220),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
                 curve: Curves.easeOut,
-                textStyle: Theme.of(context).textTheme.headlineMedium,
+                style: streakStyle,
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutBack,
+                  scale: _streakScale,
+                  child: AnimatedFlipCounter(
+                    value: state.streak,
+                    duration: const Duration(milliseconds: 220),
+                    curve: Curves.easeOut,
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
               Expanded(
@@ -73,56 +117,72 @@ class _CardsViewState extends State<CardsView> {
                   builder: (context, constraints) {
                     final cardSize = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.7);
                     final dragOpacity = _overlayOpacity(_dragOffset, constraints.maxWidth);
+                    final hasDeck = state.hasCards && currentCard != null;
                     return Center(
                       child: Stack(
                         clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
-                          ..._buildLeftDepthCards(count: leftDepthCount, cardSize: cardSize),
-                          if (nextCard != null)
+                          if (hasDeck) ..._buildLeftDepthCards(count: leftDepthCount, cardSize: cardSize),
+                          if (hasDeck && nextCard != null)
                             AnimatedScale(
                               duration: const Duration(milliseconds: 160),
                               curve: Curves.easeOut,
                               scale: _nextCardScale,
                               child: _CardTile(card: nextCard, size: cardSize),
                             ),
-                          GestureDetector(
-                            onPanStart: _isSwipeCompleting || _isInstantResetFrame ? null : (_) => _startDragTracking(),
-                            onPanUpdate: _isSwipeCompleting || _isInstantResetFrame ? null : _onPanUpdate,
-                            onPanEnd: _isSwipeCompleting || _isInstantResetFrame
-                                ? null
-                                : (details) => _onPanEnd(context, details),
-                            child: AnimatedContainer(
-                              duration: _isInstantResetFrame
-                                  ? Duration.zero
-                                  : _isSwipeCompleting
-                                  ? _flyAwayDuration
-                                  : const Duration(milliseconds: 120),
-                              curve: Curves.easeOut,
-                              transform: Matrix4.identity()
-                                ..translate(_dragOffset.dx, _dragOffset.dy)
-                                ..rotateZ(_dragOffset.dx / 300 * 0.3),
-                              child: Stack(
-                                children: [
-                                  _CardTile(card: currentCard, size: cardSize),
-                                  Positioned.fill(
-                                    child: IgnorePointer(
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: _dragOffset.dx == 0
-                                              ? Colors.transparent
-                                              : _dragOffset.dx > 0
-                                              ? Colors.green.withValues(alpha: dragOpacity)
-                                              : Colors.red.withValues(alpha: dragOpacity),
-                                          borderRadius: BorderRadius.circular(24),
+                          if (hasDeck)
+                            GestureDetector(
+                              onPanStart: _isSwipeCompleting || _isInstantResetFrame
+                                  ? null
+                                  : (_) => _startDragTracking(),
+                              onPanUpdate: _isSwipeCompleting || _isInstantResetFrame ? null : _onPanUpdate,
+                              onPanEnd: _isSwipeCompleting || _isInstantResetFrame
+                                  ? null
+                                  : (details) => _onPanEnd(context, details),
+                              child: AnimatedContainer(
+                                duration: _isInstantResetFrame
+                                    ? Duration.zero
+                                    : _isSwipeCompleting
+                                    ? _flyAwayDuration
+                                    : const Duration(milliseconds: 120),
+                                curve: Curves.easeOut,
+                                transform: Matrix4.identity()
+                                  ..translate(_dragOffset.dx, _dragOffset.dy)
+                                  ..rotateZ(_dragOffset.dx / 300 * 0.3),
+                                child: Stack(
+                                  children: [
+                                    _CardTile(card: currentCard, size: cardSize),
+                                    Positioned.fill(
+                                      child: IgnorePointer(
+                                        child: DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: _dragOffset.dx == 0
+                                                ? Colors.transparent
+                                                : _dragOffset.dx > 0
+                                                ? Colors.green.withValues(alpha: dragOpacity)
+                                                : Colors.red.withValues(alpha: dragOpacity),
+                                            borderRadius: BorderRadius.circular(24),
+                                          ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                            )
+                          else
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('No cards in deck'),
+                                const SizedBox(height: 12),
+                                ElevatedButton(
+                                  onPressed: () => context.read<CardsCubit>().restartDeck(),
+                                  child: const Text('Restart'),
+                                ),
+                              ],
                             ),
-                          ),
                         ],
                       ),
                     );
