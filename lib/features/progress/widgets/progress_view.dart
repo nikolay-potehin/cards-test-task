@@ -25,7 +25,8 @@ class ProgressView extends StatelessWidget {
 
         final progress = data.progress;
         final history = data.history;
-        final successRate = (progress.accuracy * 100).toStringAsFixed(1);
+        final successRate = progress.accuracy.clamp(0.0, 1.0);
+        final successRateLabel = '${(successRate * 100).toStringAsFixed(1)}%';
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +37,12 @@ class ProgressView extends StatelessWidget {
             _ProgressMetric(title: 'Current streak', value: '${progress.currentStreak}'),
             _ProgressMetric(title: 'Right answers', value: '${progress.correctCount}'),
             _ProgressMetric(title: 'Wrong answers', value: '${progress.incorrectCount}'),
-            _ProgressMetric(title: 'Success rate', value: '$successRate%'),
+            const SizedBox(height: 8),
+            Text('Success rate', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Center(
+              child: _SuccessRateRing(key: ValueKey(successRateLabel), progress: successRate, label: successRateLabel),
+            ),
             const SizedBox(height: 12),
             Text('Recent choices', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
@@ -97,6 +103,47 @@ class _ProgressMetric extends StatelessWidget {
         children: [
           Expanded(child: Text(title, style: Theme.of(context).textTheme.bodyMedium)),
           Text(value, style: Theme.of(context).textTheme.titleSmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _SuccessRateRing extends StatelessWidget {
+  const _SuccessRateRing({super.key, required this.progress, required this.label});
+
+  final double progress;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox.square(
+      dimension: 88,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: progress),
+            duration: const Duration(milliseconds: 420),
+            curve: Curves.easeOutCubic,
+            builder: (_, value, _) {
+              return Transform.flip(
+                flipX: true,
+                child: CircularProgressIndicator(
+                  value: value,
+                  strokeCap: StrokeCap.round,
+                  strokeWidth: 8,
+                  constraints: BoxConstraints.tight(const Size.square(64)),
+                  backgroundColor: Colors.red.withValues(alpha: 0.32),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                ),
+              );
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+            child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+          ),
         ],
       ),
     );

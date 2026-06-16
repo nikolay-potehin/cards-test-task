@@ -61,3 +61,4 @@ Example:
 - Deck-complete confetti scales with final streak.
 - Streak ring fills from 0 to 10.
 - Streak ring animates clockwise with inner spacing.
+- Progress drawer has animated success ring.
