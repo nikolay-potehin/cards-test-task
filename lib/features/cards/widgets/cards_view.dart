@@ -109,35 +109,67 @@ class _CardsViewState extends State<CardsView> {
         final nextCard = state.nextCard;
         final leftDepthCount = _leftDepthCount(state);
         final maxLeftDepthCount = _maxLeftDepthCount(state);
-        final streakStyle = (Theme.of(context).textTheme.headlineMedium ?? const TextStyle()).copyWith(
-          color: _isStreakHighlighted ? Colors.orange : Theme.of(context).colorScheme.onSurface,
+        final streakStyle = (Theme.of(context).textTheme.headlineLarge ?? const TextStyle(fontSize: 54)).copyWith(
+          fontWeight: FontWeight.w700,
+          color: _isStreakHighlighted
+              ? Theme.of(context).colorScheme.onSecondaryContainer
+              : Theme.of(context).colorScheme.onSurface,
         );
 
         return Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Column(
                 children: [
-                  const SizedBox(height: 8),
-                  Text('Streak', style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 2),
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOut,
-                    style: streakStyle,
-                    child: AnimatedScale(
-                      duration: const Duration(milliseconds: 180),
-                      curve: Curves.easeOutBack,
-                      scale: _streakScale,
-                      child: AnimatedFlipCounter(
-                        value: state.streak,
-                        duration: const Duration(milliseconds: 220),
-                        curve: Curves.easeOut,
-                      ),
+                  Text('Streak', style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 4),
+                  SizedBox.square(
+                    dimension: 80,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(end: (state.streak / 10).clamp(0.0, 1.0)),
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                          builder: (_, progress, _) {
+                            return Transform.flip(
+                              flipX: true,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                strokeCap: StrokeCap.round,
+                                strokeWidth: 8,
+                                backgroundColor: Colors.grey.withValues(alpha: 0.28),
+                                constraints: BoxConstraints.tight(Size.square(56)),
+                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+                              ),
+                            );
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 180),
+                            curve: Curves.easeOut,
+                            style: streakStyle,
+                            child: AnimatedScale(
+                              duration: const Duration(milliseconds: 180),
+                              curve: Curves.easeOutBack,
+                              scale: _streakScale,
+                              child: AnimatedFlipCounter(
+                                value: state.streak,
+                                duration: const Duration(milliseconds: 220),
+                                curve: Curves.easeOut,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {

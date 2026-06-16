@@ -59,3 +59,5 @@ Example:
 - Streak pulses orange on increment.
 - Drawer shows all-session best and answer totals.
 - Deck-complete confetti scales with final streak.
+- Streak ring fills from 0 to 10.
+- Streak ring animates clockwise with inner spacing.

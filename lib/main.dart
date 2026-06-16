@@ -21,6 +21,7 @@ class MainApp extends StatelessWidget {
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: controller.themeMode,
+      debugShowCheckedModeBanner: false,
       builder: (context, child) => InheritedDependencies(dependencies: deps, child: child!),
       home: const HomeScreen(),
     );
