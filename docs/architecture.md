@@ -62,3 +62,5 @@ Example:
 - Streak ring fills from 0 to 10.
 - Streak ring animates clockwise with inner spacing.
 - Progress drawer has animated success ring.
+- Progress drawer shows tiered motivational quotes.
+- Quotes refresh randomly on each drawer open.
