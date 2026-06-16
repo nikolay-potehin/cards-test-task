@@ -41,6 +41,7 @@ class CardsCubit extends Cubit<CardsState> {
   final ProgressRepo _progressRepo;
 
   Future<void> loadCards() async {
+    await _progressRepo.resetCurrentStreak();
     emit(state.copyWith(isLoading: true, streak: 0));
     final result = await _cardsRepo.loadCards();
     result.when(

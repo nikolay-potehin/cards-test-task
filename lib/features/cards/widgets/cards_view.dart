@@ -15,7 +15,6 @@ class CardsView extends StatefulWidget {
 }
 
 class _CardsViewState extends State<CardsView> {
-  static const _maxLeftDepthCards = 3;
   static const _swipeVelocity = 240.0;
   static const _swipeDistance = 90.0;
   static const _backtrackDistance = 30.0;
@@ -23,6 +22,7 @@ class _CardsViewState extends State<CardsView> {
   static const _flyAwayDuration = Duration(milliseconds: 180);
   static const _backCardScale = 0.9;
   static const _maxOverlayOpacity = 0.3;
+  static const _leftDepthSpreadFraction = 0.1;
 
   Offset _dragOffset = Offset.zero;
   double _maxRightDx = 0;
@@ -47,10 +47,10 @@ class _CardsViewState extends State<CardsView> {
       listener: (_, state) {
         if (state.streak > _lastStreak) {
           final targetScale = state.streak % 10 == 0
-              ? 1.18
+              ? 2.0
               : state.streak % 5 == 0
-              ? 1.13
-              : 1.07;
+              ? 1.8
+              : 1.35;
           _streakPulseTimer?.cancel();
           setState(() {
             _streakScale = targetScale;
@@ -85,6 +85,7 @@ class _CardsViewState extends State<CardsView> {
         final currentCard = state.currentCard;
         final nextCard = state.nextCard;
         final leftDepthCount = _leftDepthCount(state);
+        final maxLeftDepthCount = _maxLeftDepthCount(state);
         final streakStyle = (Theme.of(context).textTheme.headlineMedium ?? const TextStyle()).copyWith(
           color: _isStreakHighlighted ? Colors.orange : Theme.of(context).colorScheme.onSurface,
         );
@@ -123,7 +124,12 @@ class _CardsViewState extends State<CardsView> {
                         clipBehavior: Clip.none,
                         alignment: Alignment.center,
                         children: [
-                          if (hasDeck) ..._buildLeftDepthCards(count: leftDepthCount, cardSize: cardSize),
+                          if (hasDeck)
+                            ..._buildLeftDepthCards(
+                              count: leftDepthCount,
+                              maxCount: maxLeftDepthCount,
+                              cardSize: cardSize,
+                            ),
                           if (hasDeck && nextCard != null)
                             AnimatedScale(
                               duration: const Duration(milliseconds: 160),
@@ -312,25 +318,34 @@ class _CardsViewState extends State<CardsView> {
 
   int _leftDepthCount(CardsState state) {
     final remainingBehindNext = state.cards.length - state.currentIndex - 2;
-    if (remainingBehindNext <= 0) {
-      return 0;
-    }
-    return remainingBehindNext > _maxLeftDepthCards ? _maxLeftDepthCards : remainingBehindNext;
+    return remainingBehindNext > 0 ? remainingBehindNext : 0;
   }
 
-  List<Widget> _buildLeftDepthCards({required int count, required Size cardSize}) {
+  int _maxLeftDepthCount(CardsState state) {
+    final maxBehindNext = state.cards.length - 2;
+    return maxBehindNext > 0 ? maxBehindNext : 0;
+  }
+
+  List<Widget> _buildLeftDepthCards({required int count, required int maxCount, required Size cardSize}) {
     if (count <= 0) {
       return const [];
     }
 
+    final depthMax = maxCount > 1 ? maxCount : 1;
+    final normalizedCount = depthMax == 1 ? 1.0 : (count - 1) / (depthMax - 1);
+    final spreadUsage = 0.5 + normalizedCount * 0.5;
+    final spreadWidth = cardSize.width * _leftDepthSpreadFraction * spreadUsage;
+    final maxAngle = 0.08 + 0.08 * spreadUsage;
+
     final cards = <Widget>[];
     for (var i = count - 1; i >= 0; i--) {
-      final depth = i + 1;
+      final t = count == 1 ? 1.0 : i / (count - 1);
+      final visualT = 0.15 + 0.85 * t;
       cards.add(
         Transform.translate(
-          offset: Offset(-(8.0 + 4.5 * depth), depth * 0.8),
+          offset: Offset(-(spreadWidth * visualT), visualT),
           child: Transform.rotate(
-            angle: -0.04 * depth,
+            angle: -(maxAngle * visualT),
             child: _DeckDepthCard(size: Size(cardSize.width * _backCardScale, cardSize.height * _backCardScale)),
           ),
         ),
