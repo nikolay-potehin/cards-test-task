@@ -18,7 +18,6 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = ThemeController.of(context);
     return MaterialApp(
-      key: ValueKey(controller.themeMode),
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       themeMode: controller.themeMode,
