@@ -51,3 +51,5 @@ Example:
 - Swipe behavior remains custom (no swipe package).
 - Data is in-memory and hardcoded for this assignment.
 - Restart reloads random 10-card subset from repo.
+- Streak resets on each loaded deck.
+- Streak grows only on correct swipe decision.

@@ -3,13 +3,14 @@ import 'package:test_task_cards/features/cards/models/card_model.dart';
 import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
 
 class CardsState {
-  const CardsState({required this.isLoading, required this.cards, required this.currentIndex});
+  const CardsState({required this.isLoading, required this.cards, required this.currentIndex, required this.streak});
 
-  const CardsState.initial() : this(isLoading: true, cards: const [], currentIndex: 0);
+  const CardsState.initial() : this(isLoading: true, cards: const [], currentIndex: 0, streak: 0);
 
   final bool isLoading;
   final List<CardModel> cards;
   final int currentIndex;
+  final int streak;
 
   bool get hasCards => currentIndex < cards.length;
 
@@ -20,11 +21,12 @@ class CardsState {
     return nextIndex < cards.length ? cards[nextIndex] : null;
   }
 
-  CardsState copyWith({bool? isLoading, List<CardModel>? cards, int? currentIndex}) {
+  CardsState copyWith({bool? isLoading, List<CardModel>? cards, int? currentIndex, int? streak}) {
     return CardsState(
       isLoading: isLoading ?? this.isLoading,
       cards: cards ?? this.cards,
       currentIndex: currentIndex ?? this.currentIndex,
+      streak: streak ?? this.streak,
     );
   }
 }
@@ -35,33 +37,36 @@ class CardsCubit extends Cubit<CardsState> {
   final CardsRepo _repo;
 
   Future<void> loadCards() async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(isLoading: true, streak: 0));
     final result = await _repo.loadCards();
     result.when(
       ok: (cards) {
-        emit(CardsState(isLoading: false, cards: cards, currentIndex: 0));
+        emit(CardsState(isLoading: false, cards: cards, currentIndex: 0, streak: 0));
       },
       err: (_, _) {
-        emit(const CardsState(isLoading: false, cards: [], currentIndex: 0));
+        emit(const CardsState(isLoading: false, cards: [], currentIndex: 0, streak: 0));
       },
     );
   }
 
   void swipeLeft() {
-    _advance();
+    _advance(isRightSwipe: false);
   }
 
   void swipeRight() {
-    _advance();
+    _advance(isRightSwipe: true);
   }
 
   Future<void> restartDeck() => loadCards();
 
-  void _advance() {
+  void _advance({required bool isRightSwipe}) {
     if (!state.hasCards) {
       return;
     }
-    emit(state.copyWith(currentIndex: state.currentIndex + 1));
+    if (state.currentCard case final card?) {
+      final isAnswerCorrect = isRightSwipe == card.isCorrect;
+      emit(state.copyWith(currentIndex: state.currentIndex + 1, streak: isAnswerCorrect ? state.streak + 1 : 0));
+    }
   }
 }
 

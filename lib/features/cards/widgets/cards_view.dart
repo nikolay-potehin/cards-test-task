@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:test_task_cards/animated_flip_counter.dart';
 import 'package:test_task_cards/features/cards/controllers/cards_cubit.dart';
 import 'package:test_task_cards/features/cards/models/card_model.dart';
 
@@ -54,64 +55,80 @@ class _CardsViewState extends State<CardsView> {
 
         return Padding(
           padding: const EdgeInsets.all(16),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final cardSize = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.7);
-              final dragOpacity = _overlayOpacity(_dragOffset, constraints.maxWidth);
-              return Center(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.center,
-                  children: [
-                    ..._buildLeftDepthCards(count: leftDepthCount, cardSize: cardSize),
-                    if (nextCard != null)
-                      AnimatedScale(
-                        duration: const Duration(milliseconds: 160),
-                        curve: Curves.easeOut,
-                        scale: _nextCardScale,
-                        child: _CardTile(card: nextCard, size: cardSize),
-                      ),
-                    GestureDetector(
-                      onPanStart: _isSwipeCompleting || _isInstantResetFrame ? null : (_) => _startDragTracking(),
-                      onPanUpdate: _isSwipeCompleting || _isInstantResetFrame ? null : _onPanUpdate,
-                      onPanEnd: _isSwipeCompleting || _isInstantResetFrame
-                          ? null
-                          : (details) => _onPanEnd(context, details),
-                      child: AnimatedContainer(
-                        duration: _isInstantResetFrame
-                            ? Duration.zero
-                            : _isSwipeCompleting
-                            ? _flyAwayDuration
-                            : const Duration(milliseconds: 120),
-                        curve: Curves.easeOut,
-                        transform: Matrix4.identity()
-                          ..translate(_dragOffset.dx, _dragOffset.dy)
-                          ..rotateZ(_dragOffset.dx / 300 * 0.3),
-                        child: Stack(
-                          children: [
-                            _CardTile(card: currentCard, size: cardSize),
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: _dragOffset.dx == 0
-                                        ? Colors.transparent
-                                        : _dragOffset.dx > 0
-                                        ? Colors.green.withValues(alpha: dragOpacity)
-                                        : Colors.red.withValues(alpha: dragOpacity),
-                                    borderRadius: BorderRadius.circular(24),
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Text('Streak', style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 2),
+              AnimatedFlipCounter(
+                value: state.streak,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                textStyle: Theme.of(context).textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final cardSize = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.7);
+                    final dragOpacity = _overlayOpacity(_dragOffset, constraints.maxWidth);
+                    return Center(
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
+                        children: [
+                          ..._buildLeftDepthCards(count: leftDepthCount, cardSize: cardSize),
+                          if (nextCard != null)
+                            AnimatedScale(
+                              duration: const Duration(milliseconds: 160),
+                              curve: Curves.easeOut,
+                              scale: _nextCardScale,
+                              child: _CardTile(card: nextCard, size: cardSize),
+                            ),
+                          GestureDetector(
+                            onPanStart: _isSwipeCompleting || _isInstantResetFrame ? null : (_) => _startDragTracking(),
+                            onPanUpdate: _isSwipeCompleting || _isInstantResetFrame ? null : _onPanUpdate,
+                            onPanEnd: _isSwipeCompleting || _isInstantResetFrame
+                                ? null
+                                : (details) => _onPanEnd(context, details),
+                            child: AnimatedContainer(
+                              duration: _isInstantResetFrame
+                                  ? Duration.zero
+                                  : _isSwipeCompleting
+                                  ? _flyAwayDuration
+                                  : const Duration(milliseconds: 120),
+                              curve: Curves.easeOut,
+                              transform: Matrix4.identity()
+                                ..translate(_dragOffset.dx, _dragOffset.dy)
+                                ..rotateZ(_dragOffset.dx / 300 * 0.3),
+                              child: Stack(
+                                children: [
+                                  _CardTile(card: currentCard, size: cardSize),
+                                  Positioned.fill(
+                                    child: IgnorePointer(
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          color: _dragOffset.dx == 0
+                                              ? Colors.transparent
+                                              : _dragOffset.dx > 0
+                                              ? Colors.green.withValues(alpha: dragOpacity)
+                                              : Colors.red.withValues(alpha: dragOpacity),
+                                          borderRadius: BorderRadius.circular(24),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           ),
         );
       },
