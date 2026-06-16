@@ -17,6 +17,9 @@ sealed class ProgressRepo {
   Future<Result<void>> saveCardChoice({required CardModel card, required bool isRightSwipe});
 
   /// {@macro progress_repo}
+  Future<Result<void>> resetCurrentStreak();
+
+  /// {@macro progress_repo}
   Future<Result<List<CardSwipeChoice>>> loadHistory({int length = 10});
 }
 
@@ -36,6 +39,11 @@ final class ProgressRepo$Rest extends ProgressRepo {
   }
 
   @override
+  Future<Result<void>> resetCurrentStreak() async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<Result<List<CardSwipeChoice>>> loadHistory({int length = 10}) async {
     throw UnimplementedError();
   }
@@ -47,15 +55,37 @@ final class ProgressRepo$Stub extends ProgressRepo {
   const ProgressRepo$Stub() : super();
 
   static final _history = <CardSwipeChoice>[];
+  static ProgressModel _progress = const ProgressModel(
+    json: null,
+    currentStreak: 0,
+    bestStreak: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+  );
 
   @override
   Future<Result<ProgressModel>> readProgress() async {
-    throw UnimplementedError();
+    return Result.ok(_progress);
   }
 
   @override
   Future<Result<void>> saveCardChoice({required CardModel card, required bool isRightSwipe}) async {
     _history.add((card: card.copyWith(), isRightSwipe: isRightSwipe));
+    final isCorrectAnswer = isRightSwipe == card.isCorrect;
+    final nextCurrentStreak = isCorrectAnswer ? _progress.currentStreak + 1 : 0;
+    final nextBestStreak = nextCurrentStreak > _progress.bestStreak ? nextCurrentStreak : _progress.bestStreak;
+    _progress = _progress.copyWith(
+      currentStreak: nextCurrentStreak,
+      bestStreak: nextBestStreak,
+      correctCount: isCorrectAnswer ? _progress.correctCount + 1 : _progress.correctCount,
+      incorrectCount: isCorrectAnswer ? _progress.incorrectCount : _progress.incorrectCount + 1,
+    );
+    return Result.ok(null);
+  }
+
+  @override
+  Future<Result<void>> resetCurrentStreak() async {
+    _progress = _progress.copyWith(currentStreak: 0);
     return Result.ok(null);
   }
 

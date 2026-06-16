@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test_task_cards/dependencies.dart';
+import 'package:test_task_cards/features/progress/models/progress_model.dart';
 import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
+
+typedef _ProgressDrawerData = ({ProgressModel progress, List<CardSwipeChoice> history});
 
 class ProgressView extends StatelessWidget {
   const ProgressView({super.key});
@@ -8,54 +11,94 @@ class ProgressView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repo = Dependencies.of(context).repo<ProgressRepo>();
-    return FutureBuilder(
-      future: repo.loadHistory(),
+    return FutureBuilder<_ProgressDrawerData>(
+      future: _loadDrawerData(repo),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData) {
+        final data = snapshot.data;
+        if (data == null) {
           return const Center(child: Text('Failed to load history'));
         }
 
-        final result = snapshot.data!;
-        return result.when(
-          ok: (history) {
-            if (history.isEmpty) {
-              return const Center(child: Text('No choices yet'));
-            }
+        final progress = data.progress;
+        final history = data.history;
+        final successRate = (progress.accuracy * 100).toStringAsFixed(1);
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Recent choices', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: ListView.separated(
-                    itemCount: history.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final choice = history[index];
-                      final wasCorrect = choice.isRightSwipe == choice.card.isCorrect;
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text('${choice.card.word} -> ${choice.card.translation}'),
-                        subtitle: Text(choice.isRightSwipe ? 'Swipe: right' : 'Swipe: left'),
-                        trailing: Icon(
-                          wasCorrect ? Icons.check_circle : Icons.cancel,
-                          color: wasCorrect ? Colors.green : Colors.red,
-                        ),
-                      );
-                    },
-                  ),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Progress', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            _ProgressMetric(title: 'Best streak', value: '${progress.bestStreak}'),
+            _ProgressMetric(title: 'Current streak', value: '${progress.currentStreak}'),
+            _ProgressMetric(title: 'Right answers', value: '${progress.correctCount}'),
+            _ProgressMetric(title: 'Wrong answers', value: '${progress.incorrectCount}'),
+            _ProgressMetric(title: 'Success rate', value: '$successRate%'),
+            const SizedBox(height: 12),
+            Text('Recent choices', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            if (history.isEmpty)
+              const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No choices yet'))
+            else
+              Expanded(
+                child: ListView.separated(
+                  itemCount: history.length,
+                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final choice = history[index];
+                    final wasCorrect = choice.isRightSwipe == choice.card.isCorrect;
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text('${choice.card.word} -> ${choice.card.translation}'),
+                      subtitle: Text(choice.isRightSwipe ? 'Swipe: right' : 'Swipe: left'),
+                      trailing: Icon(
+                        wasCorrect ? Icons.check_circle : Icons.cancel,
+                        color: wasCorrect ? Colors.green : Colors.red,
+                      ),
+                    );
+                  },
                 ),
-              ],
-            );
-          },
-          err: (_, _) => const Center(child: Text('Failed to load history')),
+              ),
+          ],
         );
       },
+    );
+  }
+
+  Future<_ProgressDrawerData> _loadDrawerData(ProgressRepo repo) async {
+    final progressResult = await repo.readProgress();
+    final historyResult = await repo.loadHistory();
+
+    return (
+      progress: progressResult.when(
+        ok: (data) => data,
+        err: (_, _) =>
+            const ProgressModel(json: null, currentStreak: 0, bestStreak: 0, correctCount: 0, incorrectCount: 0),
+      ),
+      history: historyResult.when(ok: (data) => data, err: (_, _) => const <CardSwipeChoice>[]),
+    );
+  }
+}
+
+class _ProgressMetric extends StatelessWidget {
+  const _ProgressMetric({required this.title, required this.value});
+
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Row(
+        children: [
+          Expanded(child: Text(title, style: Theme.of(context).textTheme.bodyMedium)),
+          Text(value, style: Theme.of(context).textTheme.titleSmall),
+        ],
+      ),
     );
   }
 }

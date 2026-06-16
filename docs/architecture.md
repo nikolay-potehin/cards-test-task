@@ -57,3 +57,4 @@ Example:
 - Correct choice uses light haptic, wrong uses heavy.
 - Streak stays visible until restart tap.
 - Streak pulses orange on increment.
+- Drawer shows all-session best and answer totals.
