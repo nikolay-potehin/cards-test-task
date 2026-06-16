@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_task_cards/features/cards/controllers/cards_controller.dart';
 import 'package:test_task_cards/features/cards/models/card_model.dart';
+import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
 
 class CardsState {
   const CardsState({required this.isLoading, required this.cards, required this.currentIndex});
@@ -30,13 +30,13 @@ class CardsState {
 }
 
 class CardsCubit extends Cubit<CardsState> {
-  CardsCubit(this._controller) : super(const CardsState.initial());
+  CardsCubit(this._repo) : super(const CardsState.initial());
 
-  final CardsController _controller;
+  final CardsRepo _repo;
 
   Future<void> loadCards() async {
     emit(state.copyWith(isLoading: true));
-    final result = await _controller.loadCards();
+    final result = await _repo.loadCards();
     result.when(
       ok: (cards) {
         emit(CardsState(isLoading: false, cards: cards, currentIndex: 0));

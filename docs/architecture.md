@@ -3,6 +3,12 @@
 ## Goal
 Feature-first structure with strict import boundaries and clear ownership.
 
+## Data Flow
+- `data_source` (optional) -> `repo` -> `controller (Cubit)` -> `UI`.
+- Repos obtain data only.
+- Cubits transform state based on user input.
+- UI renders cubit state and triggers cubit actions.
+
 ## Layers
 - `lib/features/`: app features.
 - `lib/core/`: app-level constants and cross-feature infrastructure.
@@ -26,9 +32,14 @@ Example:
 - Cross-feature internal imports are not allowed. Shared code belongs in `lib/core/` or `lib/widgets/`.
 
 ## Current Feature Set
-- `home`: app shell and bottom navigation.
+- `home`: app shell with app bar and right drawer.
 - `cards`: swipe flow and card session domain.
 - `progress`: session statistics and progress visualization.
+
+## Dependency Rules
+- Register all repos in `Dependencies.init()`.
+- Register abstract repo type with concrete realization value.
+- Obtain repos only via `Dependencies.of(context).repo<T>()`.
 
 ## Notes From Spec
 - State flow is designed for Cubit-based feature state.

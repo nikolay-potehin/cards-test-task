@@ -1,4 +1,3 @@
-export 'controllers/cards_controller.dart';
 export 'controllers/cards_cubit.dart';
 export 'models/card_model.dart';
 export 'repos/cards_repo.dart';

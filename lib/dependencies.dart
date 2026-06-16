@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
+import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 
 /// Stores app-wide repositories and shared runtime dependencies.
 ///
@@ -6,12 +8,15 @@ import 'package:flutter/material.dart';
 /// all dependencies required across the app.
 class Dependencies {
   /// Single entry point for all app dependency initialization at startup.
-  Future<void> init() async {}
+  Future<void> init() async {
+    putRepo<CardsRepo>(const CardsRepo$Stub());
+    putRepo<ProgressRepo>(const ProgressRepo$Stub());
+  }
 
   /// Returns a registered dependency by its type.
   T repo<T extends Object>() => _repositories[T]! as T;
 
-  /// Registers a dependency instance under its runtime type.
+  /// Registers a dependency by abstract type and concrete realization.
   @protected
   void putRepo<T extends Object>(covariant T repo) => _repositories[T] = repo;
 

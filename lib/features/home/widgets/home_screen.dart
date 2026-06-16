@@ -2,35 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:test_task_cards/features/cards/cards.dart';
 import 'package:test_task_cards/features/progress/progress.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
-  static const _screens = [CardsScreen(), ProgressScreen()];
-
-  void _onDestinationSelected(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.style_outlined), label: 'Cards'),
-          NavigationDestination(icon: Icon(Icons.insights_outlined), label: 'Progress'),
+      appBar: AppBar(
+        actions: [
+          Builder(
+            builder: (context) {
+              return IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openEndDrawer());
+            },
+          ),
         ],
+      ),
+      body: const CardsScreen(),
+      endDrawer: const Drawer(
+        child: SafeArea(
+          child: Padding(padding: EdgeInsets.all(16), child: ProgressView()),
+        ),
       ),
     );
   }

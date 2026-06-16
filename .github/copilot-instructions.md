@@ -40,3 +40,8 @@ the optional scopes are: shared, master, client, online, admin_panel, calendar_v
 # Project
 - Do not create any UI components, TextStyles and Colors unless explicitly asked for. Use existing components, colors and textStyles (via TextTheme.of(context)), see text_theme.dart and color_spectrum.dart for example values of existing text styles and colors. Use them unless explicitly asked for creating new styles and colors.
 - When creating models, extend from DataClass<ModelName>, implement all required methods (see data_class.dart for example). For copyWith implementation method, see client.dart; Use Defaulted<T extends Object?> = const Omit() for values. For nullable values, use Defaulted<T?>, not Defaulted<T>? or Defaulted<T?>?. the Defaulted is never nullable, instead it is const Omit() by default.
+- Architecture data flow is `data_source` (optional) -> `repo` -> `controller (Cubit)` -> `UI`.
+- Repos only obtain data. Cubits only transform state based on user input. UI only renders cubit state and triggers cubit actions.
+- Register all repos in `Dependencies.init()`.
+- Register repo by abstract repo type in `putRepo<T>()` and pass concrete realization as value.
+- Obtain repos only via `Dependencies.of(context).repo<T>()`.

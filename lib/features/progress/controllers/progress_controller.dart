@@ -3,7 +3,7 @@ import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 import 'package:test_task_cards/core/result.dart';
 
 class ProgressController {
-  ProgressController({ProgressRepo? repo}) : _repo = repo ?? const ProgressRepo$Stub();
+  ProgressController({required ProgressRepo repo}) : _repo = repo;
 
   final ProgressRepo _repo;
 
