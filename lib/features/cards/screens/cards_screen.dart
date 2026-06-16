@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test_task_cards/dependencies.dart';
 import 'package:test_task_cards/features/cards/controllers/cards_cubit.dart';
 import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
+import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 
 import 'package:test_task_cards/features/cards/widgets/cards_view.dart';
 
@@ -12,8 +13,9 @@ class CardsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardsRepo = Dependencies.of(context).repo<CardsRepo>();
+    final progressRepo = Dependencies.of(context).repo<ProgressRepo>();
     return BlocProvider(
-      create: (_) => CardsCubit(cardsRepo)..loadCards(),
+      create: (_) => CardsCubit(cardsRepo, progressRepo)..loadCards(),
       child: const SafeArea(child: CardsView()),
     );
   }

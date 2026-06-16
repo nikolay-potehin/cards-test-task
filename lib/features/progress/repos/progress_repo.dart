@@ -1,5 +1,8 @@
 import 'package:test_task_cards/features/progress/models/progress_model.dart';
+import 'package:test_task_cards/features/cards/models/card_model.dart';
 import 'package:test_task_cards/core/result.dart';
+
+typedef CardSwipeChoice = ({CardModel card, bool isRightSwipe});
 
 /// {@template progress_repo}
 /// Defines progress data access contract through [ProgressRepo].
@@ -9,6 +12,12 @@ sealed class ProgressRepo {
 
   /// {@macro progress_repo}
   Future<Result<ProgressModel>> readProgress();
+
+  /// {@macro progress_repo}
+  Future<Result<void>> saveCardChoice({required CardModel card, required bool isRightSwipe});
+
+  /// {@macro progress_repo}
+  Future<Result<List<CardSwipeChoice>>> loadHistory({int length = 10});
 }
 
 /// {@macro progress_repo}
@@ -20,6 +29,16 @@ final class ProgressRepo$Rest extends ProgressRepo {
   Future<Result<ProgressModel>> readProgress() async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<Result<void>> saveCardChoice({required CardModel card, required bool isRightSwipe}) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<List<CardSwipeChoice>>> loadHistory({int length = 10}) async {
+    throw UnimplementedError();
+  }
 }
 
 /// {@macro progress_repo}
@@ -27,9 +46,28 @@ final class ProgressRepo$Rest extends ProgressRepo {
 final class ProgressRepo$Stub extends ProgressRepo {
   const ProgressRepo$Stub() : super();
 
+  static final _history = <CardSwipeChoice>[];
+
   @override
   Future<Result<ProgressModel>> readProgress() async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Result<void>> saveCardChoice({required CardModel card, required bool isRightSwipe}) async {
+    _history.add((card: card.copyWith(), isRightSwipe: isRightSwipe));
+    return Result.ok(null);
+  }
+
+  @override
+  Future<Result<List<CardSwipeChoice>>> loadHistory({int length = 10}) async {
+    final limit = length < 0 ? 0 : length;
+    if (limit == 0 || _history.isEmpty) {
+      return Result.ok(const <CardSwipeChoice>[]);
+    }
+    final start = _history.length > limit ? _history.length - limit : 0;
+    final latest = _history.sublist(start).reversed.toList(growable: false);
+    return Result.ok(latest);
   }
 }
 

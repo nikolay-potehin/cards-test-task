@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:test_task_cards/features/cards/models/card_model.dart';
 import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
+import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 
 class CardsState {
   const CardsState({required this.isLoading, required this.cards, required this.currentIndex, required this.streak});
@@ -32,13 +35,14 @@ class CardsState {
 }
 
 class CardsCubit extends Cubit<CardsState> {
-  CardsCubit(this._repo) : super(const CardsState.initial());
+  CardsCubit(this._cardsRepo, this._progressRepo) : super(const CardsState.initial());
 
-  final CardsRepo _repo;
+  final CardsRepo _cardsRepo;
+  final ProgressRepo _progressRepo;
 
   Future<void> loadCards() async {
     emit(state.copyWith(isLoading: true, streak: 0));
-    final result = await _repo.loadCards();
+    final result = await _cardsRepo.loadCards();
     result.when(
       ok: (cards) {
         emit(CardsState(isLoading: false, cards: cards, currentIndex: 0, streak: 0));
@@ -66,6 +70,7 @@ class CardsCubit extends Cubit<CardsState> {
     if (state.currentCard case final card?) {
       final isAnswerCorrect = isRightSwipe == card.isCorrect;
       emit(state.copyWith(currentIndex: state.currentIndex + 1, streak: isAnswerCorrect ? state.streak + 1 : 0));
+      unawaited(_progressRepo.saveCardChoice(card: card.copyWith(), isRightSwipe: isRightSwipe));
     }
   }
 }
