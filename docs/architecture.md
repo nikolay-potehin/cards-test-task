@@ -54,3 +54,4 @@ Example:
 - Streak resets on each loaded deck.
 - Streak grows only on correct swipe decision.
 - Drawer shows recent swipe history entries.
+- Correct choice uses light haptic, wrong uses heavy.

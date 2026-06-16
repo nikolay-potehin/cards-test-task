@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:test_task_cards/animated_flip_counter.dart';
 import 'package:test_task_cards/features/cards/controllers/cards_cubit.dart';
 import 'package:test_task_cards/features/cards/models/card_model.dart';
@@ -181,6 +182,14 @@ class _CardsViewState extends State<CardsView> {
     }
 
     final cubit = context.read<CardsCubit>();
+    if (cubit.state.currentCard case final card?) {
+      final isAnswerCorrect = isRight == card.isCorrect;
+      if (isAnswerCorrect) {
+        HapticFeedback.lightImpact();
+      } else {
+        HapticFeedback.heavyImpact();
+      }
+    }
     if (isRight) {
       cubit.swipeRight();
     } else {
