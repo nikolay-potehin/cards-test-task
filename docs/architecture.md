@@ -50,3 +50,4 @@ Example:
 - State flow is designed for Cubit-based feature state.
 - Swipe behavior remains custom (no swipe package).
 - Data is in-memory and hardcoded for this assignment.
+- Restart reloads random 10-card subset from repo.

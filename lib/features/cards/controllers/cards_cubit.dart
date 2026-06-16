@@ -55,6 +55,8 @@ class CardsCubit extends Cubit<CardsState> {
     _advance();
   }
 
+  Future<void> restartDeck() => loadCards();
+
   void _advance() {
     if (!state.hasCards) {
       return;

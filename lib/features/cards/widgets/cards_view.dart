@@ -36,7 +36,16 @@ class _CardsViewState extends State<CardsView> {
         }
 
         if (!state.hasCards || state.currentCard == null) {
-          return const Center(child: Text('No cards in deck'));
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('No cards in deck'),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: () => context.read<CardsCubit>().restartDeck(), child: const Text('Restart')),
+              ],
+            ),
+          );
         }
 
         final currentCard = state.currentCard!;
