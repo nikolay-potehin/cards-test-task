@@ -235,16 +235,9 @@ class _CardsViewState extends State<CardsView> {
                                   ),
                                 )
                               else
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('No cards in deck'),
-                                    const SizedBox(height: 12),
-                                    ElevatedButton(
-                                      onPressed: () => context.read<CardsCubit>().restartDeck(),
-                                      child: const Text('Restart'),
-                                    ),
-                                  ],
+                                _RetryDeckPanel(
+                                  streak: state.streak,
+                                  onRestart: () => context.read<CardsCubit>().restartDeck(),
                                 ),
                             ],
                           ),
@@ -511,6 +504,53 @@ class _CardTile extends StatelessWidget {
           Text(card.word, style: theme.headlineMedium),
           const SizedBox(height: 16),
           Text(card.translation, style: theme.headlineSmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _RetryDeckPanel extends StatelessWidget {
+  const _RetryDeckPanel({required this.streak, required this.onRestart});
+
+  final int streak;
+  final VoidCallback onRestart;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: 280,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.55)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 18, offset: const Offset(0, 8))],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.emoji_events_outlined, size: 30, color: colorScheme.primary),
+          const SizedBox(height: 8),
+          Text('Deck complete', style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 6),
+          Text('Final streak: $streak', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            'Ready for another round?',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: onRestart,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Restart deck'),
+            ),
+          ),
         ],
       ),
     );

@@ -64,3 +64,4 @@ Example:
 - Progress drawer has animated success ring.
 - Progress drawer shows tiered motivational quotes.
 - Quotes refresh randomly on each drawer open.
+- Retry state uses completion summary card.
