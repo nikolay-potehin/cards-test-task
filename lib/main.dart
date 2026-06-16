@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:test_task_cards/core/theme_controller.dart';
 import 'package:test_task_cards/dependencies.dart';
 import 'package:test_task_cards/features/home/widgets/home_screen.dart';
 
 Future<void> main() async {
   final deps = Dependencies();
   await deps.init();
-  runApp(MainApp(deps: deps));
+  runApp(ThemeController(child: MainApp(deps: deps)));
 }
 
 class MainApp extends StatelessWidget {
@@ -15,7 +16,12 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = ThemeController.of(context);
     return MaterialApp(
+      key: ValueKey(controller.themeMode),
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: controller.themeMode,
       builder: (context, child) => InheritedDependencies(dependencies: deps, child: child!),
       home: const HomeScreen(),
     );

@@ -14,6 +14,11 @@ Feature-first structure with strict import boundaries and clear ownership.
 - `lib/core/`: app-level constants and cross-feature infrastructure.
 - `lib/widgets/`: reusable UI primitives shared across all features.
 
+## Theme
+- Theme is controlled by root `ThemeController` (Stateful + Inherited).
+- Default mode is `ThemeMode.system` on each app start.
+- Theme toggle is runtime-only and not persisted.
+
 ## Feature Contract
 Each feature lives in `lib/features/<feature_name>/` and contains:
 - `<feature_name>.dart` (barrel file).

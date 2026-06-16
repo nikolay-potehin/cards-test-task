@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_task_cards/core/theme_controller.dart';
 import 'package:test_task_cards/features/cards/cards.dart';
 import 'package:test_task_cards/features/progress/progress.dart';
 
@@ -7,9 +8,12 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = ThemeController.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         actions: [
+          IconButton(icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode), onPressed: controller.toggleTheme),
           Builder(
             builder: (context) {
               return IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openEndDrawer());
