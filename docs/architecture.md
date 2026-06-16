@@ -58,3 +58,4 @@ Example:
 - Streak stays visible until restart tap.
 - Streak pulses orange on increment.
 - Drawer shows all-session best and answer totals.
+- Deck-complete confetti scales with final streak.
