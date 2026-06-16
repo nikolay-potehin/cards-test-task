@@ -26,6 +26,7 @@ Example:
 - Cross-feature internal imports are not allowed. Shared code belongs in `lib/core/` or `lib/widgets/`.
 
 ## Current Feature Set
+- `home`: app shell and bottom navigation.
 - `cards`: swipe flow and card session domain.
 - `progress`: session statistics and progress visualization.
 
