@@ -1,101 +1,106 @@
 # Language Cards
 
-A Flutter mini-application for learning foreign vocabulary through swipeable cards.
+Language Cards is a Flutter mini-app for vocabulary training with swipe-based decisions and session progress tracking.
 
-## Features
+## Preview
 
-### Card Screen
+<p align="center">
+	<img src="assets/swipe.png" alt="Swipe screen" width="32%" />
+	<img src="assets/progress.png" alt="Progress drawer" width="32%" />
+	<img src="assets/completed.png" alt="Deck completed state" width="32%" />
+</p>
 
-* Swipe right for a correct translation
-* Swipe left for an incorrect translation
-* Snap-back animation when swipe velocity is insufficient
-* Card rotation during drag
-* Green/red swipe hints
-* Fly-away animation on confirmed swipe
-* Haptic feedback for correct and incorrect answers
-* Current streak display with animation
-* Empty state with restart option
+## Completed Features
 
-### Progress Screen
+### Cards
 
-* Current streak
-* Best streak
-* Correct answers count
-* Incorrect answers count
-* Accuracy percentage
-* Progress visualization
-* Animated counters
-* Last 10 answers history
-* Accuracy-based motivational message
+- Custom swipe behavior (no swipe package)
+- Right/left decision with velocity and distance thresholds
+- Snap-back and fly-away animations
+- Haptic feedback: light for correct, heavy for wrong
+- Animated streak counter with circular progress ring
+- Deck-complete confetti burst from both sides
+- Retry state with completion summary card
+- Shows all remaining cards visually in the deck stack (design decision)
 
-## Technical Decisions
+### Progress Drawer
 
-### State Management
+- Current streak and all-time best streak
+- Total right/wrong answers across sessions
+- Animated success-rate ring
+- Last 10 swipe choices history
+- Tiered motivational quotes based on success rate
 
-The application uses Cubit from flutter_bloc because it provides simple and predictable state management while keeping the implementation lightweight.
+## Data Flow
 
-### Swipe Implementation
+```text
+DataSource (optional - DB, Network, Local)
+	                |
+	                v
+              Repository
+	                |
+	                v
+            Controller (Cubit)
+	                |
+	                v
+	               UI
+```
 
-Card swiping is implemented manually using GestureDetector, Transform, and AnimationController instead of third-party swipe packages. This provides full control over drag behavior, velocity detection, snap-back physics, rotation, and swipe animations.
+## State Management Decision
 
-### Data Source
+Cubit is used as the controller layer.
 
-Cards are hardcoded in memory as required by the assignment. No backend or persistence layer is included.
+InheritedWidget from SDK, provider and flutter_bloc packages adapt and extend the flutter widgets tree architecture while other popular packages are just ported from different js frameworks (mobx, redux, etc) so developers would not spend time learning and adapting to how flutter works.
 
-## Project Structure
+## Feature Contract
 
-lib/
-├── core/
-│   └── app_constants.dart
-├── widgets/
-│   └── app_section_title.dart
-├── features/
-│   ├── cards/
-│   │   ├── cards.dart
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── repos/
-│   │   ├── screens/
-│   │   └── widgets/
-│   └── progress/
-│       ├── progress.dart
-│       ├── controllers/
-│       ├── models/
-│       ├── repos/
-│       ├── screens/
-│       └── widgets/
-└── main.dart
+Each feature is standalone in `lib/features/<feature_name>/` and includes its own barrel file `<feature_name>.dart`, plus dedicated `controllers`, `models`, `repos`, `screens`, and `widgets` folders.
 
-### Import Rules
+## Core Building Blocks
 
-* Inside each feature, use local relative imports (for example `../widgets/...`).
-* Outside a feature, import only the feature barrel file (for example `import 'features/cards/cards.dart';`).
-* Shared cross-feature code belongs in `core/` or top-level `widgets/`.
+### Data Classes
 
-## Packages
+- No code generation
+- Explicit `copyWith`, equality, and JSON serialization
+- `const Omit()` allows passing null values through `copyWith` parameters
+- Data classes are generated with skills from `.github/skills`
 
-* flutter_bloc
-* animated_flip_counter
+### Repositories
 
-## Intentional Simplifications
+- Abstract repo contract + multiple realizations (`Stub`, `Rest`, etc.)
+- Seamless replacement of one realization with another
+- Repo scaffolding is generated with skills from `.github/skills`
 
-* No backend integration
-* No persistent storage
-* Single predefined card deck
-* Session statistics reset after app restart
+### Dependencies Container
 
-## Future Improvements
+- `Dependencies.init()` is a single entry point for dependency initialization
+- Easily extensible for Firebase services and any external SDKs
+- Repositories are stored in a `<Type, Object>{}` map
+- Access is simple through `InheritedDependencies`
+- Keeps DI lightweight without complex service-locator packages like `get_it`
 
-* Local persistence
-* Multiple language decks
-* Spaced repetition algorithm
-* Difficulty levels
-* User profiles and cloud sync
-* Detailed learning analytics
+### Result Wrapper
 
-## Running the Project
+- `Result` is used to wrap computations and requests into success/error outcomes
+- Easily unfolded in controller logic via `when(...)`
+- Sync usage: `Result.wrap(function)`
+- Async usage: `Result.wrapAsync(function)`
+
+## Used Packages
+
+- flutter_bloc
+- confetti
+- equatable
+
+## Run
 
 ```bash
 flutter pub get
 flutter run
 ```
+
+## Demo (MP4)
+
+<video src="assets/demo.mp4" controls muted width="50%"></video>
+
+If your Markdown viewer does not render the video element, open the file directly: [assets/demo.mp4](assets/demo.mp4)
