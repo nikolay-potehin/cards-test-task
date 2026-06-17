@@ -67,7 +67,7 @@ Each feature is standalone in `lib/features/<feature_name>/` and includes its ow
 
 ### Data Classes
 
-- No code generation
+- No code generation, no extra .g.dart files or build_runner dependencies
 - Explicit `copyWith`, equality, and JSON serialization
 - `const Omit()` allows passing null values through `copyWith` parameters
 - Data classes are generated with skills from `.github/skills`
