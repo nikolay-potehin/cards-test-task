@@ -99,8 +99,8 @@ flutter pub get
 flutter run
 ```
 
-## Demo (MP4)
+## Demo (Webm)
 
-<video src="assets/demo.mp4" controls muted width="50%"></video>
+<video src="assets/demo.webm" controls muted width="50%"></video>
 
-If your Markdown viewer does not render the video element, open the file directly: [assets/demo.mp4](assets/demo.mp4)
+If your Markdown viewer does not render the video element, open the file directly: [assets/demo.webm](assets/demo.webm)
