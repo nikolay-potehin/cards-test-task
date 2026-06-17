@@ -1,13 +1,14 @@
-import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/services.dart';
-import 'package:test_task_cards/animated_flip_counter.dart';
+import 'package:test_task_cards/features/cards/widgets/card_tile.dart';
+import 'package:test_task_cards/features/cards/widgets/deck_confetti_burst.dart';
+import 'package:test_task_cards/features/cards/widgets/deck_depth_card.dart';
+import 'package:test_task_cards/features/cards/widgets/retry_deck_panel.dart';
+import 'package:test_task_cards/features/cards/widgets/streak_counter.dart';
 import 'package:test_task_cards/features/cards/controllers/cards_cubit.dart';
-import 'package:test_task_cards/features/cards/models/card_model.dart';
 
 class CardsView extends StatefulWidget {
   const CardsView({super.key});
@@ -34,29 +35,9 @@ class _CardsViewState extends State<CardsView> {
   bool _isSwipeCompleting = false;
   bool _isInstantResetFrame = false;
   double _nextCardScale = _backCardScale;
-  int _lastStreak = 0;
-  double _streakScale = 1;
-  bool _isStreakHighlighted = false;
-  Timer? _streakPulseTimer;
-  late final ConfettiController _leftConfettiController;
-  late final ConfettiController _rightConfettiController;
   bool _lastHadCards = false;
-  int _confettiParticles = _baseConfettiParticles;
-
-  @override
-  void initState() {
-    super.initState();
-    _leftConfettiController = ConfettiController(duration: const Duration(milliseconds: 900));
-    _rightConfettiController = ConfettiController(duration: const Duration(milliseconds: 900));
-  }
-
-  @override
-  void dispose() {
-    _streakPulseTimer?.cancel();
-    _leftConfettiController.dispose();
-    _rightConfettiController.dispose();
-    super.dispose();
-  }
+  int _confettiParticles = 0;
+  int _confettiPlayTrigger = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -64,40 +45,9 @@ class _CardsViewState extends State<CardsView> {
       listener: (_, state) {
         final deckJustCompleted = _lastHadCards && !state.hasCards && !state.isLoading;
         if (deckJustCompleted) {
-          _playDeckCompleteConfetti(state.streak);
+          _triggerDeckCompleteConfetti(state.streak);
         }
 
-        if (state.streak > _lastStreak) {
-          final targetScale = state.streak % 10 == 0
-              ? 2.0
-              : state.streak % 5 == 0
-              ? 1.8
-              : 1.35;
-          _streakPulseTimer?.cancel();
-          setState(() {
-            _streakScale = targetScale;
-            _isStreakHighlighted = true;
-          });
-          _streakPulseTimer = Timer(const Duration(milliseconds: 280), () {
-            if (!mounted) {
-              return;
-            }
-            setState(() {
-              _streakScale = 1;
-              _isStreakHighlighted = false;
-            });
-          });
-        }
-
-        if (state.streak == 0) {
-          _streakPulseTimer?.cancel();
-          setState(() {
-            _streakScale = 1;
-            _isStreakHighlighted = false;
-          });
-        }
-
-        _lastStreak = state.streak;
         _lastHadCards = state.hasCards;
       },
       builder: (context, state) {
@@ -109,12 +59,6 @@ class _CardsViewState extends State<CardsView> {
         final nextCard = state.nextCard;
         final leftDepthCount = _leftDepthCount(state);
         final maxLeftDepthCount = _maxLeftDepthCount(state);
-        final streakStyle = (Theme.of(context).textTheme.headlineLarge ?? const TextStyle(fontSize: 54)).copyWith(
-          fontWeight: FontWeight.w700,
-          color: _isStreakHighlighted
-              ? Theme.of(context).colorScheme.onSecondaryContainer
-              : Theme.of(context).colorScheme.onSurface,
-        );
 
         return Stack(
           children: [
@@ -122,58 +66,12 @@ class _CardsViewState extends State<CardsView> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Column(
                 children: [
-                  const SizedBox(height: 2),
-                  Text('Streak', style: Theme.of(context).textTheme.titleLarge),
-                  const SizedBox(height: 4),
-                  SizedBox.square(
-                    dimension: 80,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(end: (state.streak / 10).clamp(0.0, 1.0)),
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeOutCubic,
-                          builder: (_, progress, _) {
-                            return Transform.flip(
-                              flipX: true,
-                              child: CircularProgressIndicator(
-                                value: progress,
-                                strokeCap: StrokeCap.round,
-                                strokeWidth: 8,
-                                backgroundColor: Colors.grey.withValues(alpha: 0.28),
-                                constraints: BoxConstraints.tight(Size.square(56)),
-                                valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
-                              ),
-                            );
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-                          child: AnimatedDefaultTextStyle(
-                            duration: const Duration(milliseconds: 180),
-                            curve: Curves.easeOut,
-                            style: streakStyle,
-                            child: AnimatedScale(
-                              duration: const Duration(milliseconds: 180),
-                              curve: Curves.easeOutBack,
-                              scale: _streakScale,
-                              child: AnimatedFlipCounter(
-                                value: state.streak,
-                                duration: const Duration(milliseconds: 220),
-                                curve: Curves.easeOut,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  StreakCounter(streak: state.streak),
                   const SizedBox(height: 8),
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final cardSize = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.7);
+                        final cardSize = Size(constraints.maxWidth * 0.7, constraints.maxHeight * 0.75);
                         final dragOpacity = _overlayOpacity(_dragOffset, constraints.maxWidth);
                         final hasDeck = state.hasCards && currentCard != null;
                         return Center(
@@ -192,7 +90,7 @@ class _CardsViewState extends State<CardsView> {
                                   duration: const Duration(milliseconds: 160),
                                   curve: Curves.easeOut,
                                   scale: _nextCardScale,
-                                  child: _CardTile(card: nextCard, size: cardSize),
+                                  child: CardTile(card: nextCard, size: cardSize),
                                 ),
                               if (hasDeck)
                                 GestureDetector(
@@ -215,7 +113,7 @@ class _CardsViewState extends State<CardsView> {
                                       ..rotateZ(_dragOffset.dx / 300 * 0.3),
                                     child: Stack(
                                       children: [
-                                        _CardTile(card: currentCard, size: cardSize),
+                                        CardTile(card: currentCard, size: cardSize),
                                         Positioned.fill(
                                           child: IgnorePointer(
                                             child: DecoratedBox(
@@ -235,7 +133,7 @@ class _CardsViewState extends State<CardsView> {
                                   ),
                                 )
                               else
-                                _RetryDeckPanel(
+                                RetryDeckPanel(
                                   streak: state.streak,
                                   onRestart: () => context.read<CardsCubit>().restartDeck(),
                                 ),
@@ -254,28 +152,18 @@ class _CardsViewState extends State<CardsView> {
                   children: [
                     Align(
                       alignment: const Alignment(-1, _confettiVerticalAlignment),
-                      child: ConfettiWidget(
-                        confettiController: _leftConfettiController,
-                        blastDirection: 0,
-                        emissionFrequency: 0.06,
+                      child: DeckConfettiBurst(
+                        playTrigger: _confettiPlayTrigger,
                         numberOfParticles: _confettiParticles,
-                        maxBlastForce: 22,
-                        minBlastForce: 10,
-                        gravity: 0.22,
-                        shouldLoop: false,
+                        blastDirection: 0,
                       ),
                     ),
                     Align(
                       alignment: const Alignment(1, _confettiVerticalAlignment),
-                      child: ConfettiWidget(
-                        confettiController: _rightConfettiController,
-                        blastDirection: math.pi,
-                        emissionFrequency: 0.06,
+                      child: DeckConfettiBurst(
+                        playTrigger: _confettiPlayTrigger,
                         numberOfParticles: _confettiParticles,
-                        maxBlastForce: 22,
-                        minBlastForce: 10,
-                        gravity: 0.22,
-                        shouldLoop: false,
+                        blastDirection: math.pi,
                       ),
                     ),
                   ],
@@ -288,7 +176,7 @@ class _CardsViewState extends State<CardsView> {
     );
   }
 
-  void _playDeckCompleteConfetti(int streak) {
+  void _triggerDeckCompleteConfetti(int streak) {
     final particles = (_baseConfettiParticles * streak * 0.1).round();
     if (particles <= 0) {
       return;
@@ -296,14 +184,7 @@ class _CardsViewState extends State<CardsView> {
 
     setState(() {
       _confettiParticles = particles;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      _leftConfettiController.play();
-      _rightConfettiController.play();
+      _confettiPlayTrigger++;
     });
   }
 
@@ -451,109 +332,12 @@ class _CardsViewState extends State<CardsView> {
           offset: Offset(-(spreadWidth * visualT), visualT),
           child: Transform.rotate(
             angle: -(maxAngle * visualT),
-            child: _DeckDepthCard(size: Size(cardSize.width * _backCardScale, cardSize.height * _backCardScale)),
+            child: DeckDepthCard(size: Size(cardSize.width * _backCardScale, cardSize.height * _backCardScale)),
           ),
         ),
       );
     }
     return cards;
-  }
-}
-
-class _DeckDepthCard extends StatelessWidget {
-  const _DeckDepthCard({required this.size});
-
-  final Size size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size.width,
-      height: size.height,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.6)),
-      ),
-    );
-  }
-}
-
-class _CardTile extends StatelessWidget {
-  const _CardTile({required this.card, required this.size});
-
-  final CardModel card;
-  final Size size;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    return Container(
-      width: size.width,
-      height: size.height,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 20, offset: const Offset(0, 8))],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(card.word, style: theme.headlineMedium),
-          const SizedBox(height: 16),
-          Text(card.translation, style: theme.headlineSmall),
-        ],
-      ),
-    );
-  }
-}
-
-class _RetryDeckPanel extends StatelessWidget {
-  const _RetryDeckPanel({required this.streak, required this.onRestart});
-
-  final int streak;
-  final VoidCallback onRestart;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      width: 280,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outlineVariant.withValues(alpha: 0.55)),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 18, offset: const Offset(0, 8))],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.emoji_events_outlined, size: 30, color: colorScheme.primary),
-          const SizedBox(height: 8),
-          Text('Deck complete', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 6),
-          Text('Final streak: $streak', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text(
-            'Ready for another round?',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: onRestart,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Restart deck'),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
