@@ -31,6 +31,13 @@ Language Cards is a Flutter mini-app for vocabulary training with swipe-based de
 - Last 10 swipe choices history
 - Tiered motivational quotes based on success rate
 
+## What Was Intentionally Simplified And What I Would Improve With More Time
+
+- The design is intentionally minimal due to time constraints.
+- With more time, the UI/UX could be significantly improved: typography, composition, state visuals, and micro-interactions.
+- The current architecture allows adding multiple repository realizations quickly.
+- Ready JSON serialization in models and abstract repo contracts make it easy to switch to a REST API architecture where all progress is stored on the server. It is also straightforward to build a fully local implementation instead: shared_prefs + sqlite with a single table for storing all user swipes. It only requires initializing extra dependencies in the Dependencies.init() method: configuring Dio or Sqlite connection and switching current $Stub repos realization for new one
+
 ## Data Flow
 
 ```text
