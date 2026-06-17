@@ -101,6 +101,6 @@ flutter run
 
 ## Demo (Webm)
 
-<video src="assets/demo.webm" controls muted width="50%"></video>
+[demo.webm](https://github.com/user-attachments/assets/c4a6478f-e641-488f-bc87-1d4486a8f1b7)
 
 If your Markdown viewer does not render the video element, open the file directly: [assets/demo.webm](assets/demo.webm)
