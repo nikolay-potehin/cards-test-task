@@ -17,6 +17,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  patrol: ^4.7.1
 
 flutter:
   uses-material-design: true
+
+patrol:
+  app_name: test_task_cards
+  android:
+    package_name: com.example.test_task_cards
+  ios:
+    bundle_id: com.example.testTaskCards
