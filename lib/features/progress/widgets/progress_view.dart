@@ -66,26 +66,58 @@ class ProgressView extends StatelessWidget {
         final successRate = progress.accuracy.clamp(0.0, 1.0);
         final successRateLabel = '${(successRate * 100).toStringAsFixed(1)}%';
         final quote = _quoteForSuccessRate(successRate: successRate);
+        final theme = Theme.of(context);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Progress', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
-            _ProgressMetric(title: 'Best streak', value: '${progress.bestStreak}'),
-            _ProgressMetric(title: 'Current streak', value: '${progress.currentStreak}'),
-            _ProgressMetric(title: 'Right answers', value: '${progress.correctCount}'),
-            _ProgressMetric(title: 'Wrong answers', value: '${progress.incorrectCount}'),
+            Text('Progress', style: theme.textTheme.headlineSmall),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _MetricCard(
+                    title: 'Best streak',
+                    value: '${progress.bestStreak}',
+                    icon: Icons.local_fire_department,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _MetricCard(title: 'Current', value: '${progress.currentStreak}', icon: Icons.bolt),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
-            Text('Success rate', style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _MetricCard(
+                    title: 'Right',
+                    value: '${progress.correctCount}',
+                    icon: Icons.check_circle,
+                    color: Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _MetricCard(
+                    title: 'Wrong',
+                    value: '${progress.incorrectCount}',
+                    icon: Icons.cancel,
+                    color: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
             Center(
               child: _SuccessRateRing(key: ValueKey(successRateLabel), progress: successRate, label: successRateLabel),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
             _QuoteBlock(quote: quote),
-            const SizedBox(height: 12),
-            Text('Recent choices', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 16),
+            Text('Recent choices', style: theme.textTheme.titleMedium),
             const SizedBox(height: 8),
             if (history.isEmpty)
               const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No choices yet'))
@@ -93,19 +125,11 @@ class ProgressView extends StatelessWidget {
               Expanded(
                 child: ListView.separated(
                   itemCount: history.length,
-                  separatorBuilder: (_, _) => const Divider(height: 1),
+                  separatorBuilder: (_, _) => const SizedBox(height: 6),
                   itemBuilder: (context, index) {
                     final choice = history[index];
                     final wasCorrect = choice.isRightSwipe == choice.card.isCorrect;
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text('${choice.card.word} -> ${choice.card.translation}'),
-                      subtitle: Text(choice.isRightSwipe ? 'Swipe: right' : 'Swipe: left'),
-                      trailing: Icon(
-                        wasCorrect ? Icons.check_circle : Icons.cancel,
-                        color: wasCorrect ? Colors.green : Colors.red,
-                      ),
-                    );
+                    return _HistoryItem(choice: choice, wasCorrect: wasCorrect);
                   },
                 ),
               ),
@@ -137,20 +161,36 @@ class ProgressView extends StatelessWidget {
   }
 }
 
-class _ProgressMetric extends StatelessWidget {
-  const _ProgressMetric({required this.title, required this.value});
+class _MetricCard extends StatelessWidget {
+  const _MetricCard({required this.title, required this.value, required this.icon, this.color});
 
-  final String title;
-  final String value;
+  final String title, value;
+  final IconData icon;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      ),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: Theme.of(context).textTheme.bodyMedium)),
-          Text(value, style: Theme.of(context).textTheme.titleSmall),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(context).textTheme.bodySmall),
+                Text(value, style: Theme.of(context).textTheme.titleMedium),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -165,8 +205,9 @@ class _SuccessRateRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return SizedBox.square(
-      dimension: 128,
+      dimension: 160,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -180,17 +221,20 @@ class _SuccessRateRing extends StatelessWidget {
                 child: CircularProgressIndicator(
                   value: value,
                   strokeCap: StrokeCap.round,
-                  strokeWidth: 8,
-                  constraints: BoxConstraints.tight(const Size.square(76)),
-                  backgroundColor: Colors.red.withValues(alpha: 0.32),
+                  strokeWidth: 10,
+                  constraints: BoxConstraints.tight(const Size.square(120)),
+                  backgroundColor: Colors.red.withValues(alpha: 0.25),
                   valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
                 ),
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
-            child: Text(label, style: Theme.of(context).textTheme.titleMedium),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: theme.textTheme.headlineSmall),
+              Text('win rate', style: theme.textTheme.bodySmall),
+            ],
           ),
         ],
       ),
@@ -215,6 +259,41 @@ class _QuoteBlock extends StatelessWidget {
         border: Border.all(color: scheme.outlineVariant.withValues(alpha: 0.55)),
       ),
       child: Text('"$quote"', style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic)),
+    );
+  }
+}
+
+class _HistoryItem extends StatelessWidget {
+  const _HistoryItem({required this.choice, required this.wasCorrect});
+
+  final CardSwipeChoice choice;
+  final bool wasCorrect;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Icon(wasCorrect ? Icons.check_circle : Icons.cancel, color: wasCorrect ? Colors.green : Colors.red, size: 20),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${choice.card.word} → ${choice.card.translation}', style: theme.textTheme.bodyMedium),
+                Text(choice.isRightSwipe ? 'Swiped right' : 'Swiped left', style: theme.textTheme.bodySmall),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
