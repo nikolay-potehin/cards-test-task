@@ -6,6 +6,8 @@ version: 0.1.0+1
 environment:
   sdk: ^3.11.5
 
+resolution: workspace
+
 dependencies:
   confetti: ^0.8.0
   equatable: ^2.0.8
