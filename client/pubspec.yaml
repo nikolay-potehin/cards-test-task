@@ -15,6 +15,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  l: ^5.0.1
   shared:
     path: ../shared
 

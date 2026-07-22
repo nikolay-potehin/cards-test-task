@@ -4,9 +4,6 @@ import 'package:dio/dio.dart';
 import 'package:shared/shared.dart';
 import 'package:test_task_cards/core/result.dart';
 
-/// Base URL for the cards API.
-const _cardsUrl = 'http://localhost:8080/cards';
-
 /// {@template cards_repo}
 /// Defines card data access contract through [CardsRepo].
 /// {@endtemplate}
@@ -27,7 +24,7 @@ final class CardsRepo$Rest extends CardsRepo {
   @override
   Future<Result<List<CardModel>>> loadCards() async {
     return Result.wrapAsync(() async {
-      final response = await _dio.get<List<Object?>>(_cardsUrl);
+      final response = await _dio.get<List<Object?>>('/cards');
       final data = response.data ?? const <Object?>[];
       return data.map((e) => CardModel.fromJson(e! as Map<String, Object?>)).toList(growable: false);
     });
