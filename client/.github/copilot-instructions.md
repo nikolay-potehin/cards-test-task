@@ -16,6 +16,7 @@
 - Strive for minimal changes in code, without changing the API of methods, unless explicitly asked
 - If instructions are unclear, ALWAYS ask for more details instead of thinking for yourself
 - Before implementing, load `docs/architecture.md`, `docs/features.md`, and `docs/docs.md` into context. Also load `docs/models.md` and `docs/widgets.md` if the task touches models or widgets.
+- Every feature must be listed in `docs/features/` as its own `docs/features/<feature_name>/<feature_name>.md` file containing the user story and actions flow for that feature. Keep `docs/features/features.md` as the index pointing to each feature file.
 - When modifying/creating/deleting files, update the relevant docs in `docs/` — add or change the corresponding info. Keep updates small and very concise (under 10 words per change). If no docs exist for the modified files, ask the user how to document it.
 
 # Git

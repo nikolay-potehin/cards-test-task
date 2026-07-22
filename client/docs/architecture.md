@@ -13,6 +13,7 @@ Feature-first structure with strict import boundaries and clear ownership.
 - `lib/features/`: app features.
 - `lib/core/`: app-level constants and cross-feature infrastructure.
 - `lib/widgets/`: reusable UI primitives shared across all features.
+- `shared/`: models and core primitives shared with server.
 
 ## Theme
 - Theme is controlled by root `ThemeController` (Stateful + Inherited).
@@ -41,6 +42,8 @@ Example:
 - `cards`: swipe flow and card session domain.
 - `progress`: session statistics and progress visualization.
 
+The full list of features and their specs live in `docs/features/`. Each feature is documented in its own `docs/features/<feature_name>/<feature_name>.md` file.
+
 ## Dependency Rules
 - Register all repos in `Dependencies.init()`.
 - Register abstract repo type with concrete realization value.
@@ -49,7 +52,7 @@ Example:
 ## Notes From Spec
 - State flow is designed for Cubit-based feature state.
 - Swipe behavior remains custom (no swipe package).
-- Data is in-memory and hardcoded for this assignment.
+- Cards are fetched from server via `CardsRepo$Rest` (dio).
 - Restart reloads random 10-card subset from repo.
 - Streak resets on each loaded deck.
 - Streak grows only on correct swipe decision.
