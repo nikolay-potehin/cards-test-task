@@ -36,6 +36,7 @@ class RetryDeckPanel extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(
+              key: const ValueKey('restartDeckButton'),
               onPressed: onRestart,
               icon: const Icon(Icons.refresh),
               label: const Text('Restart deck'),

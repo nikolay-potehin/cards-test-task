@@ -66,7 +66,7 @@ class _CardsViewState extends State<CardsView> {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Column(
                 children: [
-                  StreakCounter(streak: state.streak),
+                  StreakCounter(key: const ValueKey('streakCounter'), streak: state.streak),
                   const SizedBox(height: 8),
                   Expanded(
                     child: LayoutBuilder(
@@ -94,6 +94,7 @@ class _CardsViewState extends State<CardsView> {
                                 ),
                               if (hasDeck)
                                 GestureDetector(
+                                  key: const ValueKey('swipeableCard'),
                                   onPanStart: _isSwipeCompleting || _isInstantResetFrame
                                       ? null
                                       : (_) => _startDragTracking(),

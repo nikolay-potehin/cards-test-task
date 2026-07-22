@@ -13,10 +13,18 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode), onPressed: controller.toggleTheme),
+          IconButton(
+            key: const ValueKey('themeToggle'),
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: controller.toggleTheme,
+          ),
           Builder(
             builder: (context) {
-              return IconButton(icon: const Icon(Icons.menu), onPressed: () => Scaffold.of(context).openEndDrawer());
+              return IconButton(
+                key: const ValueKey('menuButton'),
+                icon: const Icon(Icons.menu),
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+              );
             },
           ),
         ],
@@ -24,7 +32,10 @@ class HomeScreen extends StatelessWidget {
       body: const CardsScreen(),
       endDrawer: const Drawer(
         child: SafeArea(
-          child: Padding(padding: EdgeInsets.all(16), child: ProgressView()),
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: ProgressView(key: ValueKey('progressView')),
+          ),
         ),
       ),
     );
