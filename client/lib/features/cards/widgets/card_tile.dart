@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:test_task_cards/features/cards/models/card_model.dart';
+import 'package:shared/shared.dart';
 
 class CardTile extends StatelessWidget {
   const CardTile({super.key, required this.card, required this.size});

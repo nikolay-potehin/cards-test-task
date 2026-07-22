@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
 import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
@@ -9,7 +10,8 @@ import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 class Dependencies {
   /// Single entry point for all app dependency initialization at startup.
   Future<void> init() async {
-    putRepo<CardsRepo>(const CardsRepo$Stub());
+    final dio = Dio();
+    putRepo<CardsRepo>(CardsRepo$Rest(dio));
     putRepo<ProgressRepo>(const ProgressRepo$Stub());
   }
 

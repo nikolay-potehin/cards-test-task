@@ -1,5 +1,5 @@
+export 'package:shared/shared.dart' show CardModel;
 export 'controllers/cards_cubit.dart';
-export 'models/card_model.dart';
 export 'repos/cards_repo.dart';
 export 'screens/cards_screen.dart';
 export 'widgets/card_tile.dart';

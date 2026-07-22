@@ -10,10 +10,13 @@ resolution: workspace
 
 dependencies:
   confetti: ^0.8.0
+  dio: ^5.7.0
   equatable: ^2.0.8
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  shared:
+    path: ../shared
 
 dev_dependencies:
   flutter_test:

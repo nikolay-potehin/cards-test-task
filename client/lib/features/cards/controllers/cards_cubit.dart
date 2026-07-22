@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:test_task_cards/features/cards/models/card_model.dart';
+import 'package:shared/shared.dart';
 import 'package:test_task_cards/features/cards/repos/cards_repo.dart';
 import 'package:test_task_cards/features/progress/repos/progress_repo.dart';
 

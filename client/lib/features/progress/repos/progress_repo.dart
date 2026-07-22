@@ -1,5 +1,5 @@
+import 'package:shared/shared.dart';
 import 'package:test_task_cards/features/progress/models/progress_model.dart';
-import 'package:test_task_cards/features/cards/models/card_model.dart';
 import 'package:test_task_cards/core/result.dart';
 
 typedef CardSwipeChoice = ({CardModel card, bool isRightSwipe});

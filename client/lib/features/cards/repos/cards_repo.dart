@@ -1,6 +1,11 @@
-import 'package:test_task_cards/features/cards/models/card_model.dart';
-import 'package:test_task_cards/core/result.dart';
 import 'dart:math';
+
+import 'package:dio/dio.dart';
+import 'package:shared/shared.dart';
+import 'package:test_task_cards/core/result.dart';
+
+/// Base URL for the cards API.
+const _cardsUrl = 'http://localhost:8080/cards';
 
 /// {@template cards_repo}
 /// Defines card data access contract through [CardsRepo].
@@ -15,11 +20,17 @@ sealed class CardsRepo {
 /// {@macro cards_repo}
 /// REST realization for network-backed card access.
 final class CardsRepo$Rest extends CardsRepo {
-  const CardsRepo$Rest() : super();
+  const CardsRepo$Rest(this._dio) : super();
+
+  final Dio _dio;
 
   @override
   Future<Result<List<CardModel>>> loadCards() async {
-    throw UnimplementedError();
+    return Result.wrapAsync(() async {
+      final response = await _dio.get<List<Object?>>(_cardsUrl);
+      final data = response.data ?? const <Object?>[];
+      return data.map((e) => CardModel.fromJson(e! as Map<String, Object?>)).toList(growable: false);
+    });
   }
 }
 

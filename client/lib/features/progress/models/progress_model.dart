@@ -1,5 +1,4 @@
-import 'package:test_task_cards/core/constants.dart';
-import 'package:test_task_cards/core/data_class.dart';
+import 'package:shared/shared.dart';
 
 /// {@template progress_model}
 /// Immutable session progress snapshot represented by [ProgressModel].
