@@ -11,6 +11,8 @@ resolution: workspace
 dependencies:
   dart_frog: ^1.1.0
   equatable: ^2.0.8
+  shared:
+    path: ../shared
 
 dev_dependencies:
   dart_frog_lint: ^0.1.0
