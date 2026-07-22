@@ -36,6 +36,11 @@ migrate_working_dir/
 # Patrol Testing
 /patrol_test/test_bundle.dart
 
+# Test reporter generated output
+/tools/test-reporter/tests.json
+/tools/test-reporter/report.html
+/tools/test-reporter/report.json
+
 # Symbolication related
 app.*.symbols
 
