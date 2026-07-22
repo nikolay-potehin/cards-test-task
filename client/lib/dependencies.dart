@@ -12,7 +12,7 @@ class Dependencies {
   Future<void> init() async {
     final dio = DioFactory.create(baseUrl: 'http://10.0.2.2:8080', keyName: 'main');
     putRepo<CardsRepo>(CardsRepo$Rest(dio));
-    putRepo<ProgressRepo>(const ProgressRepo$Stub());
+    putRepo<ProgressRepo>(ProgressRepo$Stub());
   }
 
   /// Returns a registered dependency by its type.

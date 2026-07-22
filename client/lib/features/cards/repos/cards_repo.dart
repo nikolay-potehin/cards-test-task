@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:shared/shared.dart';
 import 'package:test_task_cards/core/result.dart';
@@ -36,38 +34,36 @@ final class CardsRepo$Rest extends CardsRepo {
 final class CardsRepo$Stub extends CardsRepo {
   const CardsRepo$Stub() : super();
 
-  static final random = Random();
-
   @override
   Future<Result<List<CardModel>>> loadCards() async {
-    final shuffled = List.of(_stubCards)..shuffle(random);
-    final selected = shuffled.take(10).toList(growable: false);
-    return Result.ok(selected);
+    return Result.ok(_stubCards.take(10).toList(growable: false));
   }
 
   static const _stubCards = <CardModel>[
+    // First 10 cards are all correct so tests can swipe right reliably.
     CardModel(json: null, word: 'Doll', translation: 'кукла', isCorrect: true),
-    CardModel(json: null, word: 'Ball', translation: 'стол', isCorrect: false),
     CardModel(json: null, word: 'Window', translation: 'окно', isCorrect: true),
-    CardModel(json: null, word: 'Chair', translation: 'дерево', isCorrect: false),
     CardModel(json: null, word: 'Book', translation: 'книга', isCorrect: true),
-    CardModel(json: null, word: 'Table', translation: 'яблоко', isCorrect: false),
     CardModel(json: null, word: 'Phone', translation: 'телефон', isCorrect: true),
     CardModel(json: null, word: 'River', translation: 'река', isCorrect: true),
-    CardModel(json: null, word: 'Bird', translation: 'машина', isCorrect: false),
     CardModel(json: null, word: 'Sun', translation: 'солнце', isCorrect: true),
     CardModel(json: null, word: 'Moon', translation: 'луна', isCorrect: true),
-    CardModel(json: null, word: 'Street', translation: 'комната', isCorrect: false),
     CardModel(json: null, word: 'Milk', translation: 'молоко', isCorrect: true),
     CardModel(json: null, word: 'School', translation: 'школа', isCorrect: true),
-    CardModel(json: null, word: 'Teacher', translation: 'ученик', isCorrect: false),
     CardModel(json: null, word: 'Garden', translation: 'сад', isCorrect: true),
-    CardModel(json: null, word: 'Cloud', translation: 'облако', isCorrect: true),
+    // Remaining cards include incorrect ones for variety in development.
+    CardModel(json: null, word: 'Ball', translation: 'стол', isCorrect: false),
+    CardModel(json: null, word: 'Chair', translation: 'дерево', isCorrect: false),
+    CardModel(json: null, word: 'Table', translation: 'яблоко', isCorrect: false),
+    CardModel(json: null, word: 'Bird', translation: 'машина', isCorrect: false),
+    CardModel(json: null, word: 'Street', translation: 'комната', isCorrect: false),
+    CardModel(json: null, word: 'Teacher', translation: 'ученик', isCorrect: false),
     CardModel(json: null, word: 'Bread', translation: 'карта', isCorrect: false),
+    CardModel(json: null, word: 'Engine', translation: 'обед', isCorrect: false),
+    CardModel(json: null, word: 'Cloud', translation: 'облако', isCorrect: true),
     CardModel(json: null, word: 'Mirror', translation: 'зеркало', isCorrect: true),
     CardModel(json: null, word: 'Bridge', translation: 'мост', isCorrect: true),
     CardModel(json: null, word: 'Forest', translation: 'лес', isCorrect: true),
-    CardModel(json: null, word: 'Engine', translation: 'обед', isCorrect: false),
     CardModel(json: null, word: 'Bottle', translation: 'бутылка', isCorrect: true),
     CardModel(json: null, word: 'Rocket', translation: 'ракета', isCorrect: true),
   ];

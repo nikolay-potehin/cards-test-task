@@ -51,11 +51,14 @@ final class ProgressRepo$Rest extends ProgressRepo {
 
 /// {@macro progress_repo}
 /// Stub realization for placeholder progress access wiring.
+///
+/// Holds mutable instance state so each instance is independent —
+/// tests get a fresh repo every time it is constructed.
 final class ProgressRepo$Stub extends ProgressRepo {
-  const ProgressRepo$Stub() : super();
+  ProgressRepo$Stub() : super();
 
-  static final _history = <CardSwipeChoice>[];
-  static ProgressModel _progress = const ProgressModel(
+  final _history = <CardSwipeChoice>[];
+  ProgressModel _progress = const ProgressModel(
     json: null,
     currentStreak: 0,
     bestStreak: 0,
