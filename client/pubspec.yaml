@@ -16,6 +16,7 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^9.1.1
   l: ^5.0.1
+  patrol_finders: ^3.6.0
   shared:
     path: ../shared
 
@@ -24,6 +25,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   patrol: ^4.7.1
+  integration_test:
+    sdk: flutter
 
 flutter:
   uses-material-design: true
